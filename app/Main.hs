@@ -1,6 +1,12 @@
 module Main where
 
 import Lib
+import TuringMachine
+import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)
 
 main :: IO ()
-main = someFunc
+main = do
+  hSetBuffering stdout NoBuffering
+  putStr "Hello: "
+  number <- readLn :: IO Double
+  main
