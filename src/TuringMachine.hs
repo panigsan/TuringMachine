@@ -1,12 +1,16 @@
 module TuringMachine where
 
-
 type State      = Int
 type Symbol     = Char
 data Direction  = L | R
     deriving (Show)
 type PartFun    = State -> Symbol -> (State, Symbol, Direction)
-
+{-
+data PartFun' = PartFun'
+                { state     :: State
+                , symbol    :: Symbol
+                , outState  :: State
+-}
 data Machine = Machine 
                { states         :: [ State ]
                , tapeAlphabet   :: [ Symbol ]
@@ -34,7 +38,7 @@ tm  = Machine
      , finalStates  = [1]
      }
 
-printFun :: PartFun -> String
-printFun (state symbol (a, b, c)) = "aa"
+-- printFun :: PartFun -> String
+-- printFun (state symbol (a, b, c)) = "aa"
 
 
