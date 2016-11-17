@@ -5,12 +5,7 @@ type Symbol     = Char
 data Direction  = L | R
     deriving (Show)
 type PartFun    = State -> Symbol -> (State, Symbol, Direction)
-{-
-data PartFun' = PartFun'
-                { state     :: State
-                , symbol    :: Symbol
-                , outState  :: State
--}
+
 data Machine = Machine 
                { states         :: [ State ]
                , tapeAlphabet   :: [ Symbol ]
@@ -22,13 +17,31 @@ data Machine = Machine
                }
     --deriving (Show)
 
+finished :: Machine -> State -> Bool
+finished tm state = state `elem` (finalStates tm)
+
+execute :: Machine -> State -> IO()
+execute tm state = do
+    putStr "Symbol on tape: "
+    symbol <- getChar :: IO Char
+    putStrLn ""
+
+    let (state', symbol', direction') = (partFun tm) state symbol
+    putStrLn $ show $ (state', symbol', direction')
+    
+    if not $ finished tm state'
+      then execute tm state'
+      else putStrLn "ended"
+
+
+
 -- Simple TM
 fun :: PartFun
 fun 0 '0' = (0, '1', R)
 fun 0 '1' = (0, '0', R)
 fun 0 ' ' = (1, ' ', R)
 
-tm  = Machine 
+tm1  = Machine 
      { states       = [0, 1]
      , tapeAlphabet = ['0', '1', ' ']
      , blankSymbol  = ' '
@@ -37,8 +50,5 @@ tm  = Machine
      , initialState = 0
      , finalStates  = [1]
      }
-
--- printFun :: PartFun -> String
--- printFun (state symbol (a, b, c)) = "aa"
 
 
