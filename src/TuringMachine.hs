@@ -2,7 +2,7 @@ module TuringMachine where
 
 type State      = Int
 type Symbol     = Char
-data Direction  = L | R
+data Direction  = L | R | S -- Left | Right | Stay
     deriving (Show)
 type PartFun    = State -> Symbol -> (State, Symbol, Direction)
 
@@ -54,40 +54,53 @@ moveCursor t L = t { left    = if null $ left t
                                    else head $ left t
                     , right   = cursor t : (right t)
                     }
-            
+moveCursor t S = t
+
+-- Conver the tape to a single string with Int visible symbols
+fancyTape :: Tape -> Int -> String
+fancyTape t x = (reverse $ left t)     ++
+                [ '|', cursor t, '|' ] ++
+                right t
 
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
-execute :: Machine -> State -> IO()
-execute tm state = do
-    putStr "Symbol on tape: "
-    symbol <- getChar :: IO Char
-    putStrLn ""
-
-    let (state', symbol', direction') = (partFun tm) state symbol
-    putStrLn $ show $ (state', symbol', direction')
+execute :: Machine -> Tape -> State -> IO()
+execute tm tape state = do
+    putStrLn $ show state ++ ":" ++ fancyTape tape 10
+    if not $ finished tm state
+    then
+        let symbol = cursor tape
+            (state', symbol', direction') = (partFun tm) state symbol
+            tape' = tape { cursor = symbol' } `moveCursor` direction'
+        --putStrLn $ show $ (state', symbol', direction')
+        in execute tm tape' state'
+    else
+        putStrLn "finished"
     
-    if not $ finished tm state'
-      then execute tm state'
-      else putStrLn "ended"
-
-
-
 -- Simple TM
 fun :: PartFun
+{-
 fun 0 '0' = (0, '1', R)
 fun 0 '1' = (0, '0', R)
-fun 0 ' ' = (1, ' ', R)
+fun 0 ' ' = (1, ' ', S)
+-}
+fun 0 '0' = (0, '0', R)
+fun 0 '1' = (0, '1', R)
+fun 0 ' ' = (1, ' ', L)
+
+fun 1 '0' = (2, '1', S)
+fun 1 '1' = (1, '0', L)
+
 
 tm1  = Machine 
-     { states       = [0, 1]
+     { states       = [0, 1, 2]
      , tapeAlphabet = ['0', '1', ' ']
      , blankSymbol  = ' '
      , inputSymbol  = ['0', '1']
      , partFun      = fun
      , initialState = 0
-     , finalStates  = [1]
+     , finalStates  = [2]
      }
 
 
