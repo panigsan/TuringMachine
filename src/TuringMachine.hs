@@ -17,6 +17,45 @@ data Machine = Machine
                }
     --deriving (Show)
 
+data Tape = Tape
+            { left      :: [ Symbol ]
+            , cursor    :: Symbol
+            , right     :: [ Symbol ]
+            , blank     :: Symbol
+            }
+    deriving (Show)
+
+-- Initialize a new tape with the given string and the given blank symbol
+initTape :: [ Symbol ] -> Symbol -> Tape
+initTape (x:xs) b = Tape
+                    { left    = []
+                    , cursor  = x
+                    , right   = xs
+                    , blank   = b
+                    }
+
+-- Move cursor on the tape
+moveCursor :: Tape -> Direction -> Tape
+
+moveCursor t R = t { left   = cursor t : (left t)
+                   , cursor = if null $ right t
+                                  then blank t
+                                  else head $ right t
+                   , right  = if null $ right t
+                                  then ""
+                                  else tail $ right t
+                   }
+
+moveCursor t L = t { left    = if null $ left t
+                                   then ""
+                                   else tail $ left t
+                    , cursor = if null $ left t
+                                   then blank t
+                                   else head $ left t
+                    , right   = cursor t : (right t)
+                    }
+            
+
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
