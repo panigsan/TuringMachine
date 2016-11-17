@@ -4,6 +4,25 @@ import Lib
 import TuringMachine
 import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)
 
+-- Simple TM
+fun :: PartFun
+
+fun 0 '0' = (0, '0', R)
+fun 0 '1' = (0, '1', R)
+fun 0 ' ' = (1, ' ', L)
+
+fun 1 '0' = (2, '1', S)
+fun 1 '1' = (1, '0', L)
+
+tm1  = Machine
+     { states       = [0, 1, 2]
+     , tapeAlphabet = ['0', '1', ' ']
+     , blankSymbol  = ' '
+     , inputSymbol  = ['0', '1']
+     , partFun      = fun
+     , initialState = 0
+     , finalStates  = [2]
+     }
 
 main :: IO ()
 main = do

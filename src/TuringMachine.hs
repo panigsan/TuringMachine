@@ -68,7 +68,7 @@ finished tm state = state `elem` (finalStates tm)
 execute :: Machine -> Tape -> State -> IO()
 execute tm tape state = do
     putStrLn $ show state ++ ":" ++ fancyTape tape 10
-    if not $ finished tm state
+    if not $ tm `finished` state
     then
         let symbol = cursor tape
             (state', symbol', direction') = (partFun tm) state symbol
@@ -77,30 +77,5 @@ execute tm tape state = do
         in execute tm tape' state'
     else
         putStrLn "finished"
-    
--- Simple TM
-fun :: PartFun
-{-
-fun 0 '0' = (0, '1', R)
-fun 0 '1' = (0, '0', R)
-fun 0 ' ' = (1, ' ', S)
--}
-fun 0 '0' = (0, '0', R)
-fun 0 '1' = (0, '1', R)
-fun 0 ' ' = (1, ' ', L)
-
-fun 1 '0' = (2, '1', S)
-fun 1 '1' = (1, '0', L)
-
-
-tm1  = Machine 
-     { states       = [0, 1, 2]
-     , tapeAlphabet = ['0', '1', ' ']
-     , blankSymbol  = ' '
-     , inputSymbol  = ['0', '1']
-     , partFun      = fun
-     , initialState = 0
-     , finalStates  = [2]
-     }
 
 
