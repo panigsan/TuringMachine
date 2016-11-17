@@ -58,16 +58,23 @@ moveCursor t S = t
 
 -- Conver the tape to a single string with Int visible symbols
 fancyTape :: Tape -> Int -> String
-fancyTape t x = (reverse $ left t)     ++
-                [ '|', cursor t, '|' ] ++
-                right t
+fancyTape t x = (reverse $ trail $ left t)     ++
+                [ '|', cursor t, '|' ]      ++ 
+                trail (right t)
+            where
+                -- equal spaces on each side
+                sides = (x - 1) `div` 2
+                -- add or remove symbols in order to keep both sides of the same length
+                trail text | (length text < sides) = text ++ replicate (sides - length text) ' '
+                           | otherwise = take sides text
+                
 
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
 execute :: Machine -> Tape -> State -> IO()
 execute tm tape state = do
-    putStrLn $ show state ++ ":" ++ fancyTape tape 10
+    putStrLn $ show state ++ ":" ++ fancyTape tape 21
     if not $ tm `finished` state
     then
         let symbol = cursor tape
