@@ -5,21 +5,29 @@ import TuringMachine
 import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)
 
 -- Simple TM
-fun :: PartFun
+fun :: [PartFun]
+fun = [ PartFun (0, '0') (0, '0', R)
+      , PartFun (0, '1') (0, '1', R)
+      , PartFun (0, ' ') (1, ' ', L)
+      , PartFun (1, '0') (2, '1', S)
+      , PartFun (1, '1') (1, '0', L)
+      ]
 
-fun 0 '0' = (0, '0', R)
-fun 0 '1' = (0, '1', R)
-fun 0 ' ' = (1, ' ', L)
-
-fun 1 '0' = (2, '1', S)
-fun 1 '1' = (1, '0', L)
+fun' :: [PartFun]
+fun' = map (\(x,y) -> PartFun x y) 
+            [ ( (0, '0'), (0, '0', R) )
+            , ( (0, '1'), (0, '1', R) )
+            , ( (0, ' '), (1, ' ', L) )
+            , ( (1, '0'), (2, '1', S) )
+            , ( (1, '1'), (1, '0', L) )
+            ]
 
 tm1  = Machine
      { states       = [0, 1, 2]
      , tapeAlphabet = ['0', '1', ' ']
      , blankSymbol  = ' '
      , inputSymbol  = ['0', '1']
-     , partFun      = fun
+     , partFun      = fun'
      , initialState = 0
      , finalStates  = [2]
      }

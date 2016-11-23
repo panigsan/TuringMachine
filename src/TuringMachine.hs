@@ -1,21 +1,25 @@
 module TuringMachine where
 
-type State      = Int
+type State      = Integer
 type Symbol     = Char
 data Direction  = L | R | S -- Left | Right | Stay
+    deriving (Show, Eq)
+data PartFun    = PartFun
+                  { input       :: (State, Symbol)
+                  , output      :: (State, Symbol, Direction)
+                  }
     deriving (Show)
-type PartFun    = State -> Symbol -> (State, Symbol, Direction)
 
-data Machine = Machine 
-               { states         :: [ State ]
-               , tapeAlphabet   :: [ Symbol ]
-               , blankSymbol    :: Symbol 
-               , inputSymbol    :: [ Symbol ]
-               , partFun        :: PartFun
-               , initialState   :: State
-               , finalStates    :: [ State]
-               }
-    --deriving (Show)
+data Machine    = Machine 
+                  { states         :: [ State ]
+                  , tapeAlphabet   :: [ Symbol ]
+                  , blankSymbol    :: Symbol 
+                  , inputSymbol    :: [ Symbol ]
+                  , partFun        :: [ PartFun ]
+                  , initialState   :: State
+                  , finalStates    :: [ State]
+                  }
+    deriving (Show)
 
 data Tape = Tape
             { left      :: [ Symbol ]
@@ -24,6 +28,7 @@ data Tape = Tape
             , blank     :: Symbol
             }
     deriving (Show)
+
 
 -- Initialize a new tape with the given string and the given blank symbol
 initTape :: [ Symbol ] -> Symbol -> Tape
@@ -72,17 +77,20 @@ fancyTape t x = (reverse $ trail $ left t)     ++
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
+next :: Machine -> (State, Symbol) -> (State, Symbol, Direction)
+next machine x = head $ map (output)
+                                  (filter (\f -> input f == x) (partFun machine))
+
 execute :: Machine -> Tape -> State -> IO()
 execute tm tape state = do
     putStrLn $ show state ++ ":" ++ fancyTape tape 21
     if not $ tm `finished` state
     then
         let symbol = cursor tape
-            (state', symbol', direction') = (partFun tm) state symbol
+            (state', symbol', direction') = tm `next` (state, symbol)
             tape' = tape { cursor = symbol' } `moveCursor` direction'
-        --putStrLn $ show $ (state', symbol', direction')
         in execute tm tape' state'
     else
         putStrLn "finished"
-
+    
 
