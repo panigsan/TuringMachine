@@ -2,19 +2,12 @@ module Main where
 
 import Lib
 import TuringMachine
+import Util
 import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)
 
 -- Simple TM
 fun :: [PartFun]
-fun = [ PartFun (0, '0') (0, '0', R)
-      , PartFun (0, '1') (0, '1', R)
-      , PartFun (0, ' ') (1, ' ', L)
-      , PartFun (1, '0') (2, '1', S)
-      , PartFun (1, '1') (1, '0', L)
-      ]
-
-fun' :: [PartFun]
-fun' = map (\(x,y) -> PartFun x y) 
+fun = initPartFun 
             [ ( (0, '0'), (0, '0', R) )
             , ( (0, '1'), (0, '1', R) )
             , ( (0, ' '), (1, ' ', L) )
@@ -27,7 +20,7 @@ tm1  = Machine
      , tapeAlphabet = ['0', '1', ' ']
      , blankSymbol  = ' '
      , inputSymbol  = ['0', '1']
-     , partFun      = fun'
+     , partFun      = fun
      , initialState = 0
      , finalStates  = [2]
      }

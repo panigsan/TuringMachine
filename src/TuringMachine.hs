@@ -39,6 +39,9 @@ initTape (x:xs) b = Tape
                     , blank   = b
                     }
 
+--initPartFun :: State a => [ (a, Symbol), (a, Symbol, Direction) ] -> [PartFun]
+initPartFun = map (\(x,y) -> PartFun x y)
+
 -- Move cursor on the tape
 moveCursor :: Tape -> Direction -> Tape
 
