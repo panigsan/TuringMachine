@@ -1,9 +1,9 @@
 module TuringMachine where
 
-type State      = Integer
+type State      = String
 type Symbol     = Char
 data Direction  = L | R | S -- Left | Right | Stay
-    deriving (Show, Eq)
+    deriving (Show, Eq, Read)
 data PartFun    = PartFun
                   { input       :: (State, Symbol)
                   , output      :: (State, Symbol, Direction)

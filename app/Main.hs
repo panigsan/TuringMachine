@@ -8,28 +8,36 @@ import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)
 -- Simple TM
 fun :: [PartFun]
 fun = initPartFun 
-            [ ( (0, '0'), (0, '0', R) )
-            , ( (0, '1'), (0, '1', R) )
-            , ( (0, ' '), (1, ' ', L) )
-            , ( (1, '0'), (2, '1', S) )
-            , ( (1, '1'), (1, '0', L) )
+            [ ( ("q0", '0'), ("q0", '0', R) )
+            , ( ("q0", '1'), ("q0", '1', R) )
+            , ( ("q0", ' '), ("q1", ' ', L) )
+            , ( ("q1", '0'), ("q2", '1', S) )
+            , ( ("q1", '1'), ("q1", '0', L) )
             ]
 
 tm1  = Machine
-     { states       = [0, 1, 2]
+     { states       = ["q0", "q1", "q2"]
      , tapeAlphabet = ['0', '1', ' ']
      , blankSymbol  = ' '
      , inputSymbol  = ['0', '1']
      , partFun      = fun
-     , initialState = 0
-     , finalStates  = [2]
+     , initialState = "q0"
+     , finalStates  = ["q2"]
      }
 
 main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
-    let state = initialState tm1
-        tape  = initTape "101011" (blankSymbol tm1)
+    putStrLn "File: "
+    fa <- readFile <- getLine
+    fileName <- getLine
+    putStrLn "Tape: "
+    tapeStr  <- getLine
+
+    file     <- readFile fileName
+    let tm = importTM (lines file)
+        state = initialState tm
+        tape  = initTape tapeStr (blankSymbol tm)
     putStrLn "Start"
     putStrLn $ "  " ++ fancyTape tape 21
     putStrLn "===="
