@@ -73,7 +73,7 @@ fancyTape t x = (reverse $ trail $ left t)     ++
                 -- equal spaces on each side
                 sides = (x - 1) `div` 2
                 -- add or remove symbols in order to keep both sides of the same length
-                trail text | (length text < sides) = text ++ replicate (sides - length text) ' '
+                trail text | (length text < sides) = text ++ replicate (sides - length text) (blank t)
                            | otherwise = take sides text
                 
 

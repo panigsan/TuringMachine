@@ -11,16 +11,16 @@ import System.IO
 importTM x = 
     Machine { states       = []
             , tapeAlphabet = []
-            , blankSymbol  = ' '
+            , blankSymbol  = '_' --blankLine !! 2 !! 0
             , inputSymbol  = []
             , partFun      = map (parseFun) functions
-            , initialState = "q0"
-            , finalStates  = ["q2"]
+            , initialState = "0"
+            , finalStates  = ["2"]
             }
     where
         blankLine = x !! 0
         initLine  = x !! 1
-        finalLine = x !! 1
+        finalLine = x !! 2
         functions = drop 3 x
 
 parseFun :: String -> PartFun
