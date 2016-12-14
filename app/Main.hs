@@ -1,6 +1,5 @@
 module Main where
 
-import Lib
 import TuringMachine
 import Util
 import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)

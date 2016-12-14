@@ -27,11 +27,17 @@ data Tape = Tape
             , right     :: [ Symbol ]
             , blank     :: Symbol
             }
-    deriving (Show)
+    deriving (Show, Eq)
 
 
 -- Initialize a new tape with the given string and the given blank symbol
 initTape :: [ Symbol ] -> Symbol -> Tape
+initTape [] b     = Tape
+                    { left    = []
+                    , cursor  = b
+                    , right   = []
+                    , blank   = b
+                    }
 initTape (x:xs) b = Tape
                     { left    = []
                     , cursor  = x
