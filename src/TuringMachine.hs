@@ -87,8 +87,9 @@ finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
 next :: Machine -> (State, Symbol) -> (State, Symbol, Direction)
-next machine x = head $ map (output)
-                                  (filter (\f -> input f == x) (partFun machine))
+next machine x = output . head . filter 
+                    (\f -> input f == x) $ partFun machine
+
 
 execute :: Machine -> Tape -> State -> IO()
 execute tm tape state = do
