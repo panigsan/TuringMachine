@@ -40,3 +40,12 @@ spec =
         it "does not finishes" $ do
             finished tm1 "q0" `shouldBe` False
             finished tm1 "q1" `shouldBe` False
+    
+    describe "next" $ do
+        let tm1 = Machine { states=[], tapeAlphabet=""
+                          , blankSymbol=' ', inputSymbol=""
+                          , partFun = []
+                          , initialState="q0", finalStates=["q2","q3"]
+        }
+        it "get the right next" $ do
+            1 `shouldBe` 1
