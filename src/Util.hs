@@ -6,16 +6,11 @@ import System.IO
 --importTM :: String -> Machine
 
 importTM x = 
-    Machine { states       = []
-            , tapeAlphabet = []
-            , blankSymbol  = '_' --blankLine !! 2 !! 0
-            , inputSymbol  = []
-            , partFun      = map (parseFun) functions
+    Machine { partFun      = map (parseFun) functions
             , initialState = "0"
             , finalStates  = ["2"]
             }
     where
-        blankLine = x !! 0
         initLine  = x !! 1
         finalLine = x !! 2
         functions = drop 3 x

@@ -11,11 +11,7 @@ data PartFun    = PartFun
     deriving (Show)
 
 data Machine    = Machine 
-                  { states         :: [ State ]
-                  , tapeAlphabet   :: [ Symbol ]
-                  , blankSymbol    :: Symbol 
-                  , inputSymbol    :: [ Symbol ]
-                  , partFun        :: [ PartFun ]
+                  { partFun        :: [ PartFun ]
                   , initialState   :: State
                   , finalStates    :: [ State]
                   }
@@ -25,24 +21,23 @@ data Tape = Tape
             { left      :: [ Symbol ]
             , cursor    :: Symbol
             , right     :: [ Symbol ]
-            , blank     :: Symbol
             }
     deriving (Show, Eq)
 
+blank = '_' :: Symbol
 
--- Initialize a new tape with the given string and the given blank symbol
-initTape :: [ Symbol ] -> Symbol -> Tape
-initTape [] b     = Tape
+
+-- Initialize a new tape with the given string
+initTape :: [ Symbol ] -> Tape
+initTape []       = Tape
                     { left    = []
-                    , cursor  = b
+                    , cursor  = blank
                     , right   = []
-                    , blank   = b
                     }
-initTape (x:xs) b = Tape
+initTape (x:xs)   = Tape
                     { left    = []
                     , cursor  = x
                     , right   = xs
-                    , blank   = b
                     }
 
 --initPartFun :: State a => [ (a, Symbol), (a, Symbol, Direction) ] -> [PartFun]
@@ -53,7 +48,7 @@ moveCursor :: Tape -> Direction -> Tape
 
 moveCursor t R = t { left   = cursor t : (left t)
                    , cursor = if null $ right t
-                                  then blank t
+                                  then blank
                                   else head $ right t
                    , right  = if null $ right t
                                   then ""
@@ -64,7 +59,7 @@ moveCursor t L = t { left    = if null $ left t
                                    then ""
                                    else tail $ left t
                     , cursor = if null $ left t
-                                   then blank t
+                                   then blank
                                    else head $ left t
                     , right   = cursor t : (right t)
                     }
@@ -72,15 +67,18 @@ moveCursor t S = t
 
 -- Conver the tape to a single string with Int visible symbols
 fancyTape :: Tape -> Int -> String
-fancyTape t x = (reverse $ trail $ left t)     ++
+fancyTape t x = map (repl) $ 
+                (reverse $ trail $ left t)     ++
                 [ '|', cursor t, '|' ]      ++ 
                 trail (right t)
             where
                 -- equal spaces on each side
                 sides = (x - 1) `div` 2
                 -- add or remove symbols in order to keep both sides of the same length
-                trail text | (length text < sides) = text ++ replicate (sides - length text) (blank t)
+                trail text | (length text < sides) = text ++ replicate (sides - length text) blank
                            | otherwise = take sides text
+                repl '_' = ' '
+                repl  c  = c
                 
 
 finished :: Machine -> State -> Bool
