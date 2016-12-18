@@ -3,8 +3,7 @@ module Util where
 import TuringMachine
 import System.IO
 
---importTM :: String -> Machine
-
+importTM :: [String] -> Machine
 importTM x = 
     Machine { partFun      = map (parseFun) functions
             , initialState = "0"

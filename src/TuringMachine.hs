@@ -4,6 +4,7 @@ type State      = String
 type Symbol     = Char
 data Direction  = L | R | S -- Left | Right | Stay
     deriving (Show, Eq, Read)
+
 data PartFun    = PartFun
                   { input       :: (State, Symbol)
                   , output      :: (State, Symbol, Direction)
@@ -26,7 +27,6 @@ data Tape = Tape
 
 blank = '_' :: Symbol
 
-
 -- Initialize a new tape with the given string
 initTape :: [ Symbol ] -> Tape
 initTape []       = Tape
@@ -39,9 +39,6 @@ initTape (x:xs)   = Tape
                     , cursor  = x
                     , right   = xs
                     }
-
---initPartFun :: State a => [ (a, Symbol), (a, Symbol, Direction) ] -> [PartFun]
-initPartFun = map (\(x,y) -> PartFun x y)
 
 -- Move cursor on the tape
 moveCursor :: Tape -> Direction -> Tape
@@ -63,14 +60,15 @@ moveCursor t L = t { left    = if null $ left t
                                    else head $ left t
                     , right   = cursor t : (right t)
                     }
+
 moveCursor t S = t
 
 -- Conver the tape to a single string with Int visible symbols
 fancyTape :: Tape -> Int -> String
-fancyTape t x = map (repl) $ 
-                (reverse $ trail $ left t)     ++
-                [ '|', cursor t, '|' ]      ++ 
-                trail (right t)
+fancyTape t x = map (repl) $
+                    (reverse $ trail $ left t)     ++
+                    [ '|', cursor t, '|' ]         ++
+                    trail (right t)
             where
                 -- equal spaces on each side
                 sides = (x - 1) `div` 2
@@ -86,24 +84,23 @@ finished tm state = state `elem` (finalStates tm)
 
 next :: Machine -> (State, Symbol) -> (State, Symbol, Direction)
 next machine (x_state, x_symbol) = repl . output . head . filter 
-                    (\f -> input f `comparator` (x_state, x_symbol)) $ partFun machine
+                    (\f -> input f `compare` (x_state, x_symbol)) $ partFun machine
+
         where 
-            comparator (state, '*') (state', _) = state == state'
-            comparator a b = a == b 
-            repl :: (State, Symbol, Direction) -> (State, Symbol, Direction)
+            compare (state, '*') (state', _) = state == state'
+            compare a b                      = a == b 
+
             repl (state, '*', dir)    = (state, x_symbol, dir)
             repl (state, symbol, dir) = (state, symbol, dir)
 
 execute :: Machine -> Tape -> State -> IO()
 execute tm tape state = do
     putStrLn $ show state ++ ":" ++ fancyTape tape 21
-    if not $ tm `finished` state
+    if tm `finished` state
     then
+        putStrLn "finished"
+    else
         let symbol = cursor tape
             (state', symbol', direction') = tm `next` (state, symbol)
             tape' = tape { cursor = symbol' } `moveCursor` direction'
         in execute tm tape' state'
-    else
-        putStrLn "finished"
-    
-
