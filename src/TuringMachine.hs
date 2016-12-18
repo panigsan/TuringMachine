@@ -85,9 +85,14 @@ finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
 next :: Machine -> (State, Symbol) -> (State, Symbol, Direction)
-next machine x = output . head . filter 
-                    (\f -> input f == x) $ partFun machine
-
+next machine (x_state, x_symbol) = repl . output . head . filter 
+                    (\f -> input f `comparator` (x_state, x_symbol)) $ partFun machine
+        where 
+            comparator (state, '*') (state', _) = state == state'
+            comparator a b = a == b 
+            repl :: (State, Symbol, Direction) -> (State, Symbol, Direction)
+            repl (state, '*', dir)    = (state, x_symbol, dir)
+            repl (state, symbol, dir) = (state, symbol, dir)
 
 execute :: Machine -> Tape -> State -> IO()
 execute tm tape state = do

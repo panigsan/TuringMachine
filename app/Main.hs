@@ -16,11 +16,8 @@ main = do
 
     let tm = importTM (lines file)
         state = initialState tm
-        tape  = initTape tapeStr
+        tape  = initTape tapeStr 
 
-    putStrLn $ show tm
-
-    putStrLn "Start"
     putStrLn $ "  " ++ fancyTape tape 21
     putStrLn "===="
     execute tm tape state

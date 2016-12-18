@@ -11,9 +11,8 @@ importTM x =
             , finalStates  = ["2"]
             }
     where
-        initLine  = x !! 1
-        finalLine = x !! 2
-        functions = drop 3 x
+        finalLine = x !! 1
+        functions = drop 2 x
 
 parseFun :: String -> PartFun
 parseFun x = 
