@@ -2,12 +2,14 @@ module TuringMachine where
 
 type State      = String
 type Symbol     = Char
+type Input      = (State, Symbol)
+type Output     = (State, Symbol, Direction)
 data Direction  = L | R | S -- Left | Right | Stay
     deriving (Show, Eq, Read)
 
 data PartFun    = PartFun
-                  { input       :: (State, Symbol)
-                  , output      :: (State, Symbol, Direction)
+                  { input       :: Input
+                  , output      :: Output
                   }
     deriving (Show)
 
@@ -82,6 +84,7 @@ fancyTape t x = map (repl) $
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
+{--
 next :: Machine -> (State, Symbol) -> (State, Symbol, Direction)
 next machine (x_state, x_symbol) = repl . output . head . filter 
                     (\f -> input f `compare` (x_state, x_symbol)) $ partFun machine
@@ -104,3 +107,26 @@ execute tm tape state = do
             (state', symbol', direction') = tm `next` (state, symbol)
             tape' = tape { cursor = symbol' } `moveCursor` direction'
         in execute tm tape' state'
+--}
+next2 :: Machine -> Input -> PartFun
+next2 tm (x_state, x_symbol) = head . filter 
+                    (\f -> input f `compare` (x_state, x_symbol)) $ partFun tm
+        where 
+            compare (state, '*') (state', _) = state == state'
+            compare a b                      = a == b 
+
+updateTape :: Tape -> Output -> Tape
+updateTape tape (_, '*', direction) = tape `moveCursor` direction
+updateTape tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction 
+
+compute :: Machine -> State -> Tape -> [(PartFun, Tape)]
+compute tm state tape 
+    | tm `finished` state = []
+    | otherwise           = do
+        let symbol = cursor tape
+            fun = tm `next2` (state, symbol)
+            (state', _, _) = output fun
+            tape' = updateTape tape (output fun)
+        (fun, tape') : compute tm state' tape'
+
+

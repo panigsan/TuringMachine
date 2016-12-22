@@ -2,6 +2,7 @@ module Main where
 
 import TuringMachine
 import Util
+import Data.List
 import System.IO    (BufferMode (NoBuffering), hSetBuffering, stdout)
 
 main :: IO ()
@@ -18,7 +19,9 @@ main = do
         state = initialState tm
         tape  = initTape tapeStr 
 
-    putStrLn $ "  " ++ fancyTape tape 21
+    putStrLn $ fancyTape tape 21
     putStrLn "===="
-    execute tm tape state
+    --execute tm tape state
+    let result = compute tm state tape 
+    putStrLn $ concat $ map (\(_, tape) -> fancyTape tape 21 ++ "\n") result
 
