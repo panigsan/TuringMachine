@@ -70,9 +70,9 @@ moveCursor t S = t
 -- Conver the tape to a single string with Int visible symbols
 fancyTape :: Tape -> Int -> String
 fancyTape t x = map (repl) $
-                    intersperse '│' (reverse $ trail $ left t)
+                    intersperse ' ' (reverse $ trail $ left t)
                  ++ ['║', cursor t, '║']
-                 ++ intersperse '│' (trail (right t))
+                 ++ intersperse ' ' (trail (right t))
             where
                 -- equal spaces on each side
                 sides = (x - 1) `div` 2
@@ -105,6 +105,6 @@ compute tm state tape
             fun = tm `next` (state, symbol)
             (state', _, _) = action fun
             tape' = tape `update` (action fun)
-        (fun, tape') : compute tm state' tape'
+        (fun, tape) : compute tm state' tape'
 
 
