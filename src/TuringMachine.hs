@@ -3,13 +3,13 @@ module TuringMachine where
 type State      = String
 type Symbol     = Char
 type Input      = (State, Symbol)
-type Output     = (State, Symbol, Direction)
+type Action     = (State, Symbol, Direction)
 data Direction  = L | R | S -- Left | Right | Stay
     deriving (Show, Eq, Read)
 
 data PartFun    = PartFun
                   { input       :: Input
-                  , output      :: Output
+                  , action      :: Action
                   }
     deriving (Show)
 
@@ -84,49 +84,25 @@ fancyTape t x = map (repl) $
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
-{--
-next :: Machine -> (State, Symbol) -> (State, Symbol, Direction)
-next machine (x_state, x_symbol) = repl . output . head . filter 
-                    (\f -> input f `compare` (x_state, x_symbol)) $ partFun machine
-
-        where 
-            compare (state, '*') (state', _) = state == state'
-            compare a b                      = a == b 
-
-            repl (state, '*', dir)    = (state, x_symbol, dir)
-            repl (state, symbol, dir) = (state, symbol, dir)
-
-execute :: Machine -> Tape -> State -> IO()
-execute tm tape state = do
-    putStrLn $ show state ++ ":" ++ fancyTape tape 21
-    if tm `finished` state
-    then
-        putStrLn "finished"
-    else
-        let symbol = cursor tape
-            (state', symbol', direction') = tm `next` (state, symbol)
-            tape' = tape { cursor = symbol' } `moveCursor` direction'
-        in execute tm tape' state'
---}
-next2 :: Machine -> Input -> PartFun
-next2 tm (x_state, x_symbol) = head . filter 
+next :: Machine -> Input -> PartFun
+next tm (x_state, x_symbol) = head . filter 
                     (\f -> input f `compare` (x_state, x_symbol)) $ partFun tm
         where 
             compare (state, '*') (state', _) = state == state'
             compare a b                      = a == b 
 
-updateTape :: Tape -> Output -> Tape
-updateTape tape (_, '*', direction) = tape `moveCursor` direction
-updateTape tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction 
+update :: Tape -> Action -> Tape
+update tape (_, '*', direction) = tape `moveCursor` direction
+update tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction 
 
 compute :: Machine -> State -> Tape -> [(PartFun, Tape)]
 compute tm state tape 
     | tm `finished` state = []
     | otherwise           = do
         let symbol = cursor tape
-            fun = tm `next2` (state, symbol)
-            (state', _, _) = output fun
-            tape' = updateTape tape (output fun)
+            fun = tm `next` (state, symbol)
+            (state', _, _) = action fun
+            tape' = tape `update` (action fun)
         (fun, tape') : compute tm state' tape'
 
 
