@@ -1,4 +1,6 @@
+
 module TuringMachine where
+import Data.List
 
 type State      = String
 type Symbol     = Char
@@ -68,9 +70,9 @@ moveCursor t S = t
 -- Conver the tape to a single string with Int visible symbols
 fancyTape :: Tape -> Int -> String
 fancyTape t x = map (repl) $
-                    (reverse $ trail $ left t)     ++
-                    [ '|', cursor t, '|' ]         ++
-                    trail (right t)
+                    intersperse '│' (reverse $ trail $ left t)
+                 ++ ['║', cursor t, '║']
+                 ++ intersperse '│' (trail (right t))
             where
                 -- equal spaces on each side
                 sides = (x - 1) `div` 2
