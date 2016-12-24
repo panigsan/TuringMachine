@@ -6,9 +6,8 @@ import TuringMachine
 import Util
 import Data.List
 import System.IO--    (BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
-
-main :: IO ()
-main = do
+main3 :: IO ()
+main3 = do
     hSetBuffering stdout NoBuffering
     putStrLn "File: "
     fileName <- getLine
@@ -22,11 +21,12 @@ main = do
         tape  = initTape tapeStr 
 
     putStrLn $ fancyTape tape 21
+{-
     putStrLn "===="
     --execute tm tape state
     let result = compute tm state tape 
     putStrLn $ concat $ map (\(_, tape) -> fancyTape tape 21 ++ "\n") result
-
+-}
 pause :: IO ()
 pause = do
     hFlush stdout
@@ -35,7 +35,7 @@ pause = do
 
 resetScreen :: IO ()
 resetScreen = setSGR [Reset] >> clearScreen >> setCursorPosition 0 0
-
+{-
 main2 :: IO ()
 main2 = do
     hSetBuffering stdout NoBuffering
@@ -52,10 +52,10 @@ main2 = do
         results = compute tm state tape
     
     resetScreen
-    render tm results
+    render tm results-}
     
-main3 :: IO ()
-main3 = do
+main :: IO ()
+main = do
     let fileName = "adder_adv.txt"
     file <- readFile fileName
     
@@ -90,7 +90,7 @@ renderTape tape = do
 renderTM :: Machine -> PartFun -> IO ()
 renderTM tm fun = do
     setCursorPosition 5 0
-    -- state | 
+
     putStrLn $ "╔════════════════════╦══════════════════════════════════╗"
     putStrLn $ "║       Input        ║              Output              ║"
     putStrLn $ "╟────────────────────╫──────────────────────────────────╢"
@@ -124,14 +124,16 @@ renderFun fun = do
     putStr $ fill (show direction') 13   ++ "│"
     putStrLn $ ""
 
-fill :: String -> Int -> String
-fill s x = " " ++ s ++ replicate (x - length s - 1) ' '
+    where
+        fill :: String -> Int -> String
+        fill s x = " " ++ s ++ replicate (x - length s - 1) ' '
 
-render :: Machine -> [(PartFun, Tape)] -> IO ()
+render :: Machine -> [(Maybe PartFun, Tape)] -> IO ()
 render tm [] = return ()
-render tm ((fun, tape):xs) = do
-    --resetScreen
-
+render tm ((Nothing, tape):xs) = do
+    renderTape tape
+    render tm xs
+render tm ((Just fun, tape):xs) = do
     renderTape tape
     renderTM tm fun
 

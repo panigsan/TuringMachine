@@ -97,14 +97,14 @@ update :: Tape -> Action -> Tape
 update tape (_, '*', direction) = tape `moveCursor` direction
 update tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction 
 
-compute :: Machine -> State -> Tape -> [(PartFun, Tape)]
+compute :: Machine -> State -> Tape -> [(Maybe PartFun, Tape)]
 compute tm state tape 
-    | tm `finished` state = []
+    | tm `finished` state = [(Nothing, tape)]
     | otherwise           = do
         let symbol = cursor tape
             fun = tm `next` (state, symbol)
             (state', _, _) = action fun
             tape' = tape `update` (action fun)
-        (fun, tape) : compute tm state' tape'
+        (Just fun, tape) : compute tm state' tape'
 
 
