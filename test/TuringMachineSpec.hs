@@ -3,7 +3,7 @@
 
 module TuringMachineSpec (spec) where
 
-import TuringMachine as Tm
+import TuringMachine
 import Test.Hspec
 import Test.QuickCheck
 
@@ -42,19 +42,26 @@ spec =
             finished tm1 "q1" `shouldBe` False
     
     describe "next" $ do
-        let tm1 = Machine { partFun = [ PartFun { Tm.input  = ("q0", '0') 
-                                                , Tm.output = ("q0", '0', R)}
-                                      , PartFun { Tm.input  = ("q0", '1')
-                                                , Tm.output = ("q1", '1', R)}
-                                      , PartFun { Tm.input  = ("q1", '0')
-                                                , Tm.output = ("q2", '1', L)}
-                                      , PartFun { Tm.input  = ("q1", '1')
-                                                , Tm.output = ("q3", '0', L)}
+        let tm1 = Machine { partFun = [ PartFun ("q0", '0') ("q0", '0', R)
+                                      , PartFun ("q0", '1') ("q1", '1', R)
+                                      , PartFun ("q1", '0') ("q2", '1', L)
+                                      , PartFun ("q1", '1') ("q3", '0', L)
                                       ]
                           , initialState="q0", finalStates=["q2","q3"]
         }
         it "get the right next" $ do
-            tm1 `next` ("q0", '0') `shouldBe` ("q0", '0', R)
-            tm1 `next` ("q0", '1') `shouldBe` ("q1", '1', R)
-            tm1 `next` ("q1", '0') `shouldBe` ("q2", '1', L)
-            tm1 `next` ("q1", '1') `shouldBe` ("q3", '0', L)
+            tm1 `next` ("q0", '0') `shouldBe` PartFun ("q0", '0') ("q0", '0', R)
+            tm1 `next` ("q0", '1') `shouldBe` PartFun ("q0", '1') ("q1", '1', R)
+            tm1 `next` ("q1", '0') `shouldBe` PartFun ("q1", '0') ("q2", '1', L)
+            tm1 `next` ("q1", '1') `shouldBe` PartFun ("q1", '1') ("q3", '0', L)
+
+    describe "update" $ do
+        let tape = Tape "ba" 'c' "de"
+        it "updates with the correct character" $ do
+            tape `update` ("_", 'k', S) `shouldBe` Tape "ba"  'k' "de"
+            tape `update` ("_", 'k', R) `shouldBe` Tape "kba" 'd' "e"
+            tape `update` ("_", 'k', L) `shouldBe` Tape "a"   'b' "kde"
+        it "updates with * character" $ do
+            tape `update` ("_", '*', S) `shouldBe` Tape "ba"  'c' "de"
+            tape `update` ("_", '*', R) `shouldBe` Tape "cba" 'd' "e"
+            tape `update` ("_", '*', L) `shouldBe` Tape "a"   'b' "cde"

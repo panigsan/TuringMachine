@@ -5,9 +5,9 @@ description:         Please see README.md
 homepage:            https://github.com/githubuser/TuringMachine#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author name here
+author:              Sandro Panighetti
+maintainer:          sandro.panighetti@gmail.com
+copyright:           2016 Sandro Panighetti
 category:            Web
 build-type:          Simple
 -- extra-source-files:

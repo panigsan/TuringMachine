@@ -11,14 +11,14 @@ data PartFun    = PartFun
                   { input       :: Input
                   , action      :: Action
                   }
-    deriving (Show)
+    deriving (Show, Eq)
 
 data Machine    = Machine 
                   { partFun        :: [ PartFun ]
                   , initialState   :: State
                   , finalStates    :: [ State]
                   }
-    deriving (Show)
+    deriving (Show, Eq)
 
 data Tape = Tape
             { left      :: [ Symbol ]
