@@ -10,12 +10,12 @@ import System.IO    --(BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
 
 main :: IO ()
 main = do
-    let fileName = "busy.txt"
+    let fileName = "adder_adv.txt"
     file <- readFile fileName
 
     let tm = importTM (lines file)
         state = initialState tm
-        tape = initTape "1"
+        tape = initTape "11101"
         results = compute tm state tape
 
     resetScreen
@@ -33,6 +33,7 @@ main = do
 updateScreen :: Machine -> (Maybe PartFun, Tape) -> IO ()
 updateScreen tm (Nothing, tape) = do
     renderTapeContent tape
+    pause
 updateScreen tm (Just fun, tape) = do
     renderTapeContent tape
 

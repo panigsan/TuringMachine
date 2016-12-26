@@ -79,9 +79,9 @@ next tm (x_state, x_symbol) = head . filter
             compare (state, '*') (state', _) = state == state'
             compare a b                      = a == b
 
-update :: Tape -> Action -> Tape
-update tape (_, '*', direction) = tape `moveCursor` direction
-update tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction
+update :: Tape -> Char -> Tape
+update tape '*' = tape
+update tape c   = tape { cursor = c }
 
 compute :: Machine -> State -> Tape -> [(Maybe PartFun, Tape)]
 compute tm state tape
@@ -89,6 +89,11 @@ compute tm state tape
     | otherwise           = do
         let symbol = cursor tape
             fun = tm `next` (state, symbol)
-            (state', _, _) = action fun
-            tape' = tape `update` (action fun)
-        (Just fun, tape) : compute tm state' tape'
+            (state', c', direction') = action fun
+
+            tape' = tape `update` c' -- tape in which the character has been added
+            tape'' = tape' `moveCursor` direction'
+        if tape == tape' then -- add the intermediary step only if the tape is different than the previous one
+            [(Just fun, tape)] ++  compute tm state' tape''
+        else
+            [(Just fun, tape), (Just fun, tape')] ++  compute tm state' tape''
