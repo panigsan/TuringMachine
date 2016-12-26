@@ -15,41 +15,22 @@ pause = do
     -- 1 second pause
     threadDelay 1000000
 
-render :: Machine -> [(Maybe PartFun, Tape)] -> IO ()
-render tm [] = return ()
-render tm ((Nothing, tape):xs) = do
-    renderTape tape
-    render tm xs
-render tm ((Just fun, tape):xs) = do
-    renderTape tape
-    renderTM tm fun
+highLight :: Bool -> IO ()
+highLight x = setSGR[SetSwapForegroundBackground x]
 
-    pause
-    --a <- getLine
-    render tm xs
 
--- Conver the tape to a single string with Int visible symbols
-renderTapeContent :: Tape -> Int -> IO ()
-renderTapeContent t x = do
-    putStr . repl . intersperse ' ' . reverse . trail $ left t
-    putStr "║"
-    setSGR [SetColor Foreground Dull Green]
-    putChar . repl' $ cursor t
-    setSGR [SetColor Foreground Dull White]
-    putStr "║"
-    putStr . repl . intersperse ' ' . trail $ right t
-    where
-        -- equal spaces on each side
-        sides = (x - 1) `div` 2
-        -- add or remove symbols in order to keep both sides of the same length
-        trail text | (length text < sides) = text ++ replicate (sides - length text) blank
-                   | otherwise = take sides text
-        repl = map (repl')
-        repl' '_' = ' '
-        repl'  c  = c
+highLightFun :: Machine -> PartFun -> Bool -> IO ()
+highLightFun tm fun bool= do
+    let (Just index) = fun `elemIndex` (partFun tm)
 
-renderTape :: Tape -> IO ()
-renderTape tape = do
+    setCursorPosition (10 + index) 0
+    highLight bool
+    renderFun fun
+    highLight False
+
+
+renderTapeContainer :: IO ()
+renderTapeContainer = do
     setCursorPosition 0 0
 
     putStrLn $ "╔" ++ concat (replicate 18 "══")
@@ -57,18 +38,39 @@ renderTape tape = do
                    ++ concat (replicate 18 "══")
                    ++ "═╗"
 
-    putStr   $ "║"
-    --putStr   $ fancyTape tape 39
-    renderTapeContent tape 39
-    putStrLn $ "║"
+    putStrLn   $ "║" ++ replicate 77 ' ' ++ "║"
 
     putStrLn $ "╚" ++ concat (replicate 18 "══")
                    ++ "═╩═╩"
                    ++ concat (replicate 18 "══")
                    ++ "═╝"
 
-renderTM :: Machine -> PartFun -> IO ()
-renderTM tm fun = do
+renderTapeContent :: Tape -> IO ()
+renderTapeContent t = do
+   setCursorPosition 1 1
+
+   putStr . repl . intersperse ' ' . reverse . trail $ left t
+
+   putStr "║"
+   setSGR [SetColor Foreground Vivid Green]
+   putChar . repl' $ cursor t
+   setSGR [Reset]
+   putStr "║"
+
+   putStr . repl . intersperse ' ' . trail $ right t
+
+   where
+       -- equal spaces on each side
+       sides = 19
+       -- add or remove symbols in order to keep both sides of the same length
+       trail text | (length text < sides) = text ++ replicate (sides - length text) blank
+                  | otherwise = take sides text
+       repl = map (repl')
+       repl' '_' = ' '
+       repl'  c  = c
+
+renderTMContainer :: Machine -> IO ()
+renderTMContainer tm = do
     setCursorPosition 5 0
 
     putStrLn $ "╔════════════════════╦══════════════════════════════════╗"
@@ -78,22 +80,14 @@ renderTM tm fun = do
     putStrLn $ "╠════════════════════╬══════════════════════════════════╣"
     --              9          10         9         10           13
 
-    sequence . map (\f -> setHighlight (f==fun) >> renderFun f ) $ partFun tm
-    setHighlight False
+    mapM_ renderFun $ partFun tm
     putStrLn $ "╚════════════════════╩══════════════════════════════════╝"
-
-setHighlight :: Bool -> IO ()
-setHighlight True = do
-    setSGR [SetColor Background Dull White]
-    setSGR [SetColor Foreground Dull Black]
-setHighlight False = do
-    setSGR [SetColor Background Dull Black]
-    setSGR [SetColor Foreground Dull White]
 
 renderFun :: PartFun -> IO ()
 renderFun fun = do
     let (state, symbol)               = input  fun
         (state', symbol', direction') = action fun
+
     putStr $ "║"
 
     putStr $ fill state 9                ++ "│"
@@ -101,8 +95,9 @@ renderFun fun = do
 
     putStr $ fill state' 9               ++ "│"
     putStr $ fill [symbol'] 10           ++ "│"
-    putStr $ fill (show direction') 13   ++ "│"
+    putStr $ fill (show direction') 13   ++ "║"
     putStrLn $ ""
+
 
     where
           fill :: String -> Int -> String

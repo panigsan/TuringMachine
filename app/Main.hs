@@ -6,20 +6,36 @@ import TuringMachine
 import Util
 import Render
 import Data.List
-import System.IO--    (BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
-
+import System.IO    --(BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
 
 main :: IO ()
 main = do
-    let fileName = "adder_adv.txt"
+    let fileName = "busy.txt"
     file <- readFile fileName
 
     let tm = importTM (lines file)
         state = initialState tm
-        tape = initTape "101001110"
+        tape = initTape "1"
         results = compute tm state tape
 
     resetScreen
-    renderTape tape
+    hideCursor
+
+    renderTapeContainer
+    renderTapeContent tape
+    renderTMContainer tm
+
+    mapM_ (\fun -> updateScreen tm fun) results
+
+    showCursor
+    renderTMContainer tm
+
+updateScreen :: Machine -> (Maybe PartFun, Tape) -> IO ()
+updateScreen tm (Nothing, tape) = do
+    renderTapeContent tape
+updateScreen tm (Just fun, tape) = do
+    renderTapeContent tape
+
+    highLightFun tm fun True
     pause
-    render tm results
+    highLightFun tm fun False
