@@ -15,24 +15,27 @@ pause = do
     -- 1 second pause
     threadDelay 1000000
 
-highLight :: Bool -> IO ()
-highLight x = setSGR[SetSwapForegroundBackground x]
+highLightON :: IO ()
+highLightON = setSGR[SetSwapForegroundBackground True]
+highLightOFF :: IO ()
+highLightOFF = setSGR[SetSwapForegroundBackground False]
 
+boldON :: IO ()
+boldON = setSGR [SetConsoleIntensity BoldIntensity]
+boldOFF :: IO ()
+boldOFF = setSGR [SetConsoleIntensity NormalIntensity]
 
-highLightFun :: Machine -> PartFun -> Bool -> IO ()
-highLightFun tm fun bool= do
-    let (Just index) = fun `elemIndex` (partFun tm)
+renderHeader :: String -> Tape -> IO ()
+renderHeader fileName tape = do
+    boldON >> (putStr $ "Turing machine: ") >> boldOFF
+    putStrLn fileName
+    boldON >> (putStr $ "Initial tape: ") >> boldOFF
 
-    setCursorPosition (10 + index) 0
-    highLight bool
-    renderFun fun
-    highLight False
-
+    setCursorPosition 2 0 >> renderTapeContainer
+    setCursorPosition 3 1 >> renderTapeContent tape
 
 renderTapeContainer :: IO ()
 renderTapeContainer = do
-    setCursorPosition 0 0
-
     putStrLn $ "╔" ++ concat (replicate 18 "══")
                    ++ "═╦═╦"
                    ++ concat (replicate 18 "══")
@@ -47,8 +50,6 @@ renderTapeContainer = do
 
 renderTapeContent :: Tape -> IO ()
 renderTapeContent t = do
-   setCursorPosition 1 1
-
    putStr . repl . intersperse ' ' . reverse . trail $ left t
 
    putStr "║"
@@ -71,8 +72,6 @@ renderTapeContent t = do
 
 renderTMContainer :: Machine -> IO ()
 renderTMContainer tm = do
-    setCursorPosition 5 0
-
     putStrLn $ "╔════════════════════╦══════════════════════════════════╗"
     putStrLn $ "║       Input        ║              Output              ║"
     putStrLn $ "╟────────────────────╫──────────────────────────────────╢"

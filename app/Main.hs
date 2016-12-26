@@ -10,33 +10,52 @@ import System.IO    --(BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
 
 main :: IO ()
 main = do
-    let fileName = "adder_adv.txt"
-    file <- readFile fileName
+    resetScreen
+    putStrLn $ "File name:"
+    fileName <- getLine
 
-    let tm = importTM (lines file)
+    putStrLn $ "Tape: "
+    tapeText <- getLine
+
+    file <- readFile fileName
+    let
+        tm = importTM (lines file)
         state = initialState tm
-        tape = initTape "11101"
+        tape = initTape tapeText
         results = compute tm state tape
 
     resetScreen
     hideCursor
 
-    renderTapeContainer
-    renderTapeContent tape
-    renderTMContainer tm
+    renderHeader fileName tape
+
+    setCursorPosition 6 0 >> (putStrLn $ replicate 78 '-')
+
+    boldON >> (putStrLn "Output") >> boldOFF
+
+    setCursorPosition 8 0 >> renderTapeContainer
+
+    setCursorPosition 12 0 >> renderTMContainer tm
+
+    setCursorPosition 9 1 >> renderTapeContent tape
 
     mapM_ (\fun -> updateScreen tm fun) results
 
     showCursor
-    renderTMContainer tm
+    setCursorPosition 12 0 >> renderTMContainer tm
 
 updateScreen :: Machine -> (Maybe PartFun, Tape) -> IO ()
 updateScreen tm (Nothing, tape) = do
-    renderTapeContent tape
+    setCursorPosition 9 1 >> renderTapeContent tape
     pause
 updateScreen tm (Just fun, tape) = do
-    renderTapeContent tape
+    setCursorPosition 9 1 >> renderTapeContent tape
 
-    highLightFun tm fun True
+    let (Just index) = fun `elemIndex` (partFun tm)
+
+    setCursorPosition (17 + index) 0
+    highLightON >> (renderFun fun)
     pause
-    highLightFun tm fun False
+    
+    setCursorPosition (17 + index) 0
+    highLightOFF >> (renderFun fun)
