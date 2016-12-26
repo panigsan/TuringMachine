@@ -15,7 +15,7 @@ data PartFun    = PartFun
                   }
     deriving (Show, Eq)
 
-data Machine    = Machine 
+data Machine    = Machine
                   { partFun        :: [ PartFun ]
                   , initialState   :: State
                   , finalStates    :: [ State]
@@ -67,38 +67,24 @@ moveCursor t L = t { left    = if null $ left t
 
 moveCursor t S = t
 
--- Conver the tape to a single string with Int visible symbols
-fancyTape :: Tape -> Int -> String
-fancyTape t x = map (repl) $
-                    intersperse ' ' (reverse $ trail $ left t)
-                 ++ ['║', cursor t, '║']
-                 ++ intersperse ' ' (trail (right t))
-            where
-                -- equal spaces on each side
-                sides = (x - 1) `div` 2
-                -- add or remove symbols in order to keep both sides of the same length
-                trail text | (length text < sides) = text ++ replicate (sides - length text) blank
-                           | otherwise = take sides text
-                repl '_' = ' '
-                repl  c  = c
-                
+
 
 finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
 next :: Machine -> Input -> PartFun
-next tm (x_state, x_symbol) = head . filter 
+next tm (x_state, x_symbol) = head . filter
                     (\f -> input f `compare` (x_state, x_symbol)) $ partFun tm
-        where 
+        where
             compare (state, '*') (state', _) = state == state'
-            compare a b                      = a == b 
+            compare a b                      = a == b
 
 update :: Tape -> Action -> Tape
 update tape (_, '*', direction) = tape `moveCursor` direction
-update tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction 
+update tape (_, c, direction)   = tape { cursor = c } `moveCursor` direction
 
 compute :: Machine -> State -> Tape -> [(Maybe PartFun, Tape)]
-compute tm state tape 
+compute tm state tape
     | tm `finished` state = [(Nothing, tape)]
     | otherwise           = do
         let symbol = cursor tape
@@ -106,5 +92,3 @@ compute tm state tape
             (state', _, _) = action fun
             tape' = tape `update` (action fun)
         (Just fun, tape) : compute tm state' tape'
-
-
