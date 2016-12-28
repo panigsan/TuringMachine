@@ -73,8 +73,8 @@ finished :: Machine -> State -> Bool
 finished tm state = state `elem` (finalStates tm)
 
 next :: Machine -> Input -> PartFun
-next tm (x_state, x_symbol) = head . filter
-                    (\f -> input f `compare` (x_state, x_symbol)) $ partFun tm
+next tm x_input = head . filter
+                    (\f -> input f `compare` x_input) $ partFun tm
         where
             compare (state, '*') (state', _) = state == state'
             compare a b                      = a == b

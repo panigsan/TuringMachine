@@ -13,7 +13,8 @@ pause :: IO ()
 pause = do
     hFlush stdout
     -- 1 second pause
-    threadDelay 1000000
+    --threadDelay 1000000
+    threadDelay 50000
 
 highLightON :: IO ()
 highLightON = setSGR[SetSwapForegroundBackground True]
