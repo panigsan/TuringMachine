@@ -15,7 +15,7 @@ spec =
             initTape "" `shouldBe` Tape {left="", cursor=blank, right=""}
         it "init tape with string" $
             initTape "1010" `shouldBe` Tape {left="", cursor='1', right="010"}
-
+{-
     describe "moveCursor" $ do
         let emptyTape = Tape {left="", cursor=blank, right=""}
             tape1     = Tape {left="ba", cursor='c', right="de"}
@@ -40,7 +40,7 @@ spec =
         it "does not finishes" $ do
             finished tm1 "q0" `shouldBe` False
             finished tm1 "q1" `shouldBe` False
-    
+
     describe "next" $ do
         let tm1 = Machine { partFun = [ PartFun ("q0", '0') ("q0", '0', R)
                                       , PartFun ("q0", '1') ("q1", '1', R)
@@ -65,3 +65,4 @@ spec =
             tape `update` ("_", '*', S) `shouldBe` Tape "ba"  'c' "de"
             tape `update` ("_", '*', R) `shouldBe` Tape "cba" 'd' "e"
             tape `update` ("_", '*', L) `shouldBe` Tape "a"   'b' "cde"
+-}

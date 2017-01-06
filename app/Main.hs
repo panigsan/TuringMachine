@@ -19,43 +19,47 @@ main = do
 
     file <- readFile fileName
     let
-        tm = importTM (lines file)
-        state = initialState tm
-        tape = initTape tapeText
-        results = compute tm state tape
+        mtm = importTM (lines file)
+    if mtm == Nothing then do
+        putStrLn $ "Cannot parse the turing machine"
+        putStrLn $ "Press enter to continue"
+        a <- getLine
+        main
+    else do
+        let
+            (Just tm) = mtm
+            state = initialState tm
+            tape = initTape tapeText
+            results = compute tm state tape
 
-    resetScreen
-    hideCursor
+        resetScreen
+        hideCursor
 
-    renderHeader fileName tape
+        renderHeader fileName tape
 
-    setCursorPosition 6 0 >> (putStrLn $ replicate 78 '-')
+        setCursorPosition 4 0 >> renderTapeContainer
 
-    boldON >> (putStrLn "Output") >> boldOFF
+        setCursorPosition 7 0 >> renderTMContainer tm
 
-    setCursorPosition 8 0 >> renderTapeContainer
+        setCursorPosition 5 1 >> renderTapeContent tape
 
-    setCursorPosition 12 0 >> renderTMContainer tm
+        mapM_ (\fun -> updateScreen tm fun) results
 
-    setCursorPosition 9 1 >> renderTapeContent tape
-
-    mapM_ (\fun -> updateScreen tm fun) results
-
-    showCursor
-    setCursorPosition 12 0 >> renderTMContainer tm
+        showCursor
+        setCursorPosition 7 0 >> renderTMContainer tm
 
 updateScreen :: Machine -> (Maybe PartFun, Tape) -> IO ()
 updateScreen tm (Nothing, tape) = do
-    setCursorPosition 9 1 >> renderTapeContent tape
+    setCursorPosition 5 1 >> renderTapeContent tape
     pause
 updateScreen tm (Just fun, tape) = do
-    setCursorPosition 9 1 >> renderTapeContent tape
+    setCursorPosition 5 1 >> renderTapeContent tape
 
     let (Just index) = fun `elemIndex` (partFun tm)
 
-    setCursorPosition (17 + index) 0
+    setCursorPosition (12 + index) 0
     highLightON >> (renderFun fun)
     pause
-    
-    setCursorPosition (17 + index) 0
+
+    setCursorPosition (12 + index) 0
     highLightOFF >> (renderFun fun)

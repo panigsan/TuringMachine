@@ -13,8 +13,8 @@ pause :: IO ()
 pause = do
     hFlush stdout
     -- 1 second pause
-    --threadDelay 1000000
-    threadDelay 50000
+    threadDelay 1000000
+    --threadDelay 50000
 
 highLightON :: IO ()
 highLightON = setSGR[SetSwapForegroundBackground True]
@@ -30,10 +30,8 @@ renderHeader :: String -> Tape -> IO ()
 renderHeader fileName tape = do
     boldON >> (putStr $ "Turing machine: ") >> boldOFF
     putStrLn fileName
-    boldON >> (putStr $ "Initial tape: ") >> boldOFF
-
-    setCursorPosition 2 0 >> renderTapeContainer
-    setCursorPosition 3 1 >> renderTapeContent tape
+    setCursorPosition 1 0 >> renderTapeContainer
+    setCursorPosition 2 1 >> renderTapeContent tape
 
 renderTapeContainer :: IO ()
 renderTapeContainer = do
