@@ -62,3 +62,28 @@ spec =
             tape `update` 'X' `shouldBe` Tape "ba"  'X' "de"
         it "updates with * character" $ do
             tape `update` '*' `shouldBe` Tape "ba"  'c' "de"
+
+    describe "compute" $ do
+        let q0_ = PartFun ("q0", '_') ("q1", '_', L)
+            q0' = PartFun ("q0", '*') ("q0", '*', R)
+            q10 = PartFun ("q1", '0') ("q2", '1', S)
+            q11 = PartFun ("q1", '1') ("q1", '0', L)
+            tm = Machine { initialState = "q0"
+                         , finalStates  = ["q2"]
+                         , partFun = [ q0_, q0'
+                                     , q10, q11]}
+            tape = Tape ""  '0' "11"
+        it "computes correctly binary +1" $ do
+            compute tm "q0" tape `shouldBe`
+                [ (Just q0', Tape "" '0' "11")
+                , (Just q0', Tape "0" '1' "1")
+                , (Just q0', Tape "10" '1' "")
+                , (Just q0_, Tape "110" '_' "")
+                , (Just q11, Tape "10" '1' "_")
+                , (Just q11, Tape "10" '0' "_")
+                , (Just q11, Tape "0" '1' "0_")
+                , (Just q11, Tape "0" '0' "0_")
+                , (Just q10, Tape "" '0' "00_")
+                , (Just q10, Tape "" '1' "00_")
+                , (Nothing, Tape "" '1' "00_")
+                ]
