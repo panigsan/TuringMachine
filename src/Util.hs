@@ -9,13 +9,13 @@ importTM :: [String] -> Maybe Machine
 importTM x = do
     let initialLine = words $ x !! 0
         finalLine   = words $ x !! 1
-        functions   = map (parseFun . words) (drop 2 x)
+        functions   = keepJust . map (parseFun . words) $ drop 2 x
 
     if length initialLine /= 3 ||
        length finalLine < 3
     then Nothing
     else
-        Just Machine { partFun      = keepJust $ functions
+        Just Machine { partFun      = functions
                      , initialState = initialLine !! 2
                      , finalStates  = parseFinalStates finalLine
                      }

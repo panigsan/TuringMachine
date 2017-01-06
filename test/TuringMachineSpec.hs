@@ -15,7 +15,7 @@ spec =
             initTape "" `shouldBe` Tape {left="", cursor=blank, right=""}
         it "init tape with string" $
             initTape "1010" `shouldBe` Tape {left="", cursor='1', right="010"}
-{-
+
     describe "moveCursor" $ do
         let emptyTape = Tape {left="", cursor=blank, right=""}
             tape1     = Tape {left="ba", cursor='c', right="de"}
@@ -58,11 +58,7 @@ spec =
     describe "update" $ do
         let tape = Tape "ba" 'c' "de"
         it "updates with the correct character" $ do
-            tape `update` ("_", 'k', S) `shouldBe` Tape "ba"  'k' "de"
-            tape `update` ("_", 'k', R) `shouldBe` Tape "kba" 'd' "e"
-            tape `update` ("_", 'k', L) `shouldBe` Tape "a"   'b' "kde"
+            tape `update` 'k' `shouldBe` Tape "ba"  'k' "de"
+            tape `update` 'X' `shouldBe` Tape "ba"  'X' "de"
         it "updates with * character" $ do
-            tape `update` ("_", '*', S) `shouldBe` Tape "ba"  'c' "de"
-            tape `update` ("_", '*', R) `shouldBe` Tape "cba" 'd' "e"
-            tape `update` ("_", '*', L) `shouldBe` Tape "a"   'b' "cde"
--}
+            tape `update` '*' `shouldBe` Tape "ba"  'c' "de"
