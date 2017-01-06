@@ -32,10 +32,6 @@ main = do
             tape = initTape tapeText
             results = compute tm state tape
 
-        mapM_ (\r -> putStrLn $ show r) results
-        --putStrLn $ show results
-        a <- getLine
-
         resetScreen
         hideCursor
 
