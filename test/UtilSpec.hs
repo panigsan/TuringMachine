@@ -72,6 +72,7 @@ spec = do
             f3 = PartFun ("2", '2') ("2", '2', R)
 
         it "keep only just elements" $ do
+            keepJust [] `shouldBe` []
             keepJust [Nothing] `shouldBe` []
             keepJust [Just f1] `shouldBe` [f1]
             keepJust [Just f1, Just f2, Just f3] `shouldBe`

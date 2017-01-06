@@ -50,6 +50,7 @@ parseFun values
             readMaybeSymbol _   = Nothing
 
 keepJust :: [Maybe PartFun] -> [PartFun]
+keepJust [] = []
 keepJust [Nothing] = []
 keepJust [Just x]  = [x]
 keepJust (x:xs) = keepJust [x] ++ keepJust xs
