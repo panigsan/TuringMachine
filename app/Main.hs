@@ -3,10 +3,10 @@ module Main where
 import System.Console.ANSI
 import Control.Concurrent
 import TuringMachine
-import Util
+import Util (importTM)
 import Render
-import Data.List
-import System.IO    --(BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
+import Data.List (intercalate, elemIndex)
+import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
 
 main :: IO ()
 main = do
@@ -19,7 +19,7 @@ main = do
 
     file <- readFile fileName
     let
-        mtm = importTM (lines file)
+        mtm = importTM file
     if mtm == Nothing then do
         putStrLn $ "Cannot parse the turing machine"
         putStrLn $ "Press enter to continue"
@@ -43,12 +43,16 @@ main = do
 
         setCursorPosition 5 1 >> renderTapeContent tape
 
-        mapM_ (\fun -> updateScreen tm fun) results
+        mapM_ (\(step, fun) -> updateStepCounter step >>
+                               updateScreen tm fun) (zip [1..] results)
 
-        showCursor
         setCursorPosition 7 0 >> renderTMContainer tm
+        showCursor
 
-updateScreen :: Machine -> (Maybe PartFun, Tape) -> IO ()
+-- | Prints the tape content and (if possible) highlights the partial function
+updateScreen :: Machine               -- ^ Turing machine
+             -> (Maybe PartFun, Tape) -- ^ Curerent partial function used
+             -> IO ()
 updateScreen tm (Nothing, tape) = do
     setCursorPosition 5 1 >> renderTapeContent tape
     pause
@@ -63,3 +67,11 @@ updateScreen tm (Just fun, tape) = do
 
     setCursorPosition (12 + index) 0
     highLightOFF >> (renderFun fun)
+
+-- | Update the step counter
+updateStepCounter :: Int -- ^ Number of step
+                  -> IO ()
+updateStepCounter step = do
+    setCursorPosition 8 60
+    boldON >> putStr "Step: " >> boldOFF
+    putStr $ show step

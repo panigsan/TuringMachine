@@ -5,6 +5,7 @@ module UtilSpec (spec) where
 
 import TuringMachine
 import Util
+import Data.List
 import Test.Hspec
 import Test.QuickCheck
 
@@ -12,7 +13,8 @@ spec :: Spec
 spec = do
     describe "importTM" $ do
         it "does import a tm from a string" $ do
-            let text = [ "Init = 0"
+            let text = intercalate "\n"
+                       [ "Init = 0"
                        , "Final = 5"
                        , ""
                        , "# go to the end"
@@ -37,21 +39,15 @@ spec = do
                              }
 
         it "does not import a tm - initial state not valid" $ do
-            let text = [ "Init ="
+            let text = intercalate "\n"
+                       [ "Init ="
                        , "Final = 3"]
             importTM text `shouldBe` Nothing
         it "does not import a tm - final states not valid" $ do
-            let text = [ "Init = 0"
+            let text = intercalate "\n"
+                       [ "Init = 0"
                        , "Final ="]
             importTM text `shouldBe` Nothing
-
-    describe "parseFinalStates" $ do
-        it "parses single final state" $ do
-            parseFinalStates ["Final", "=" ,"2"] `shouldBe`
-                             ["2"]
-        it "parses multiple final states" $ do
-            parseFinalStates ["Final", "=" ,"2", "3", "4"] `shouldBe`
-                             ["2", "3", "4"]
 
     describe "parseFun" $ do
         it "does parse a function" $ do

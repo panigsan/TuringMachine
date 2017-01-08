@@ -1,3 +1,4 @@
+-- | Contains useful functions for importing a turing machine from a file
 module Util where
 
 import TuringMachine
@@ -5,11 +6,25 @@ import System.IO
 import Data.Maybe
 import Text.Read
 
-importTM :: [String] -> Maybe Machine
+-- | Parse a turing machine. Example of a format:
+--
+-- > Initial = 0
+-- > Finals = 2 3
+-- > # this is a comment
+-- > 0 _ => 1 _ L
+-- > 0 * => 0 * R
+-- >
+-- > # this is also a comment
+-- > 1 0 => 2 1 S
+-- > 1 1 => 1 0 L
+-- It is important that the first two lines look like the example above
+importTM :: String        -- ^ Text following the syntax above
+         -> Maybe Machine -- ^ Resulting turing machine
 importTM x = do
-    let initialLine = words $ x !! 0
-        finalLine   = words $ x !! 1
-        functions   = keepJust . map (parseFun . words) $ drop 2 x
+    let l = lines x
+        initialLine = words $ l !! 0
+        finalLine   = words $ l !! 1
+        functions   = keepJust . map parseFun $ drop 2 l
 
     if length initialLine /= 3 ||
        length finalLine < 3
@@ -17,17 +32,18 @@ importTM x = do
     else
         Just Machine { partFun      = functions
                      , initialState = initialLine !! 2
-                     , finalStates  = parseFinalStates finalLine
+                     , finalStates  = drop 2 finalLine -- remove "Final ="
                      }
 
-
--- ["Final", "=", "2", "3"] -> ["2", "3"]
-parseFinalStates :: [String] -> [State]
-parseFinalStates x = drop 2 x
-
--- ["0", "_", "=>", "1", "_", "L"] -> Maybe PartFun
-parseFun :: [String] -> Maybe PartFun
-parseFun values
+-- | Parse a function. It has to follow this syntax
+--
+-- > input_state input_symbol => output_state output_character direction
+-- Example:
+-- 
+-- > 0 _ => 1 _ L
+parseFun :: String        -- ^ Line to parseFun
+         -> Maybe PartFun -- ^ Resulting partial function
+parseFun line
     | length values /= 6 || values !! 0 !! 0 == '#' = Nothing
     | otherwise = do
         let input_state   = values !! 0
@@ -45,10 +61,13 @@ parseFun values
            else Just (PartFun (input_state, fromJust input_symbol)
                               (action_state, fromJust action_symbol, fromJust action_dir))
         where
+            values = words line
             readMaybeSymbol :: String -> Maybe Symbol
             readMaybeSymbol [x] = Just x
             readMaybeSymbol _   = Nothing
 
+-- | Extract all the partial functions, leaving out the ones which couldn't
+-- been parsed correctly
 keepJust :: [Maybe PartFun] -> [PartFun]
 keepJust [] = []
 keepJust [Nothing] = []
