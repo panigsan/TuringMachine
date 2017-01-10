@@ -43,8 +43,7 @@ main = do
 
         setCursorPosition 5 1 >> renderTapeContent tape
 
-        mapM_ (\(step, fun) -> updateStepCounter step >>
-                               updateScreen tm fun) (zip [1..] results)
+        mapM_ (\(step, fun) -> updateScreen tm fun step) (zip [1..] results)
 
         setCursorPosition 7 0 >> renderTMContainer tm
         showCursor
@@ -52,12 +51,15 @@ main = do
 -- | Prints the tape content and (if possible) highlights the partial function
 updateScreen :: Machine               -- ^ Turing machine
              -> (Maybe PartFun, Tape) -- ^ Curerent partial function used
+             -> Int                   -- ^ Step counter
              -> IO ()
-updateScreen tm (Nothing, tape) = do
+updateScreen tm (Nothing, tape) step = do
     setCursorPosition 5 1 >> renderTapeContent tape
+    updateStepCounter step
     pause
-updateScreen tm (Just fun, tape) = do
+updateScreen tm (Just fun, tape) step = do
     setCursorPosition 5 1 >> renderTapeContent tape
+    updateStepCounter step
 
     let (Just index) = fun `elemIndex` (partFun tm)
 

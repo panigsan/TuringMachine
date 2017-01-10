@@ -50,7 +50,9 @@ data Tape = Tape
 blank = '_' :: Symbol
 
 -- | Initializes a new tape with the given string. The first character of then
--- string will be the cursor, the rest will be the right side
+-- string will be the cursor, the rest will be the right side.
+--
+-- !! All spaces will be replaced by an underscore !!
 initTape :: [ Symbol ] -> Tape
 initTape []       = Tape
                     { left    = []
@@ -59,9 +61,12 @@ initTape []       = Tape
                     }
 initTape (x:xs)   = Tape
                     { left    = []
-                    , cursor  = x
-                    , right   = xs
+                    , cursor  = repl x
+                    , right   = map repl xs
                     }
+    where
+        repl ' ' = blank
+        repl x   = x
 
 -- | Moves cursor on the tape
 moveCursor :: Tape      -- ^ Tape to move
@@ -96,12 +101,13 @@ finished tm state = state `elem` (finalStates tm)
 
 -- | Returns the partial function in line with the given input. The symbol '*'
 -- is considered as 'any value'
-next :: Machine -- ^ Turing Machine
-     -> Input   -- ^ Current input (state and cursor)
-     -> PartFun -- ^ Returing partial function
-next tm x_input = head . filter
-                    (\f -> input f `compare` x_input) $ partFun tm
+next :: Machine       -- ^ Turing Machine
+     -> Input         -- ^ Current input (state and cursor)
+     -> Maybe PartFun -- ^ Returing partial function
+next tm x_input | null selection = Nothing
+                | otherwise      = Just (head selection)
         where
+            selection = filter (\f -> input f `compare` x_input) $ partFun tm
             compare (state, '*') (state', _) = state == state'
             compare a b                      = a == b
 
@@ -125,9 +131,9 @@ compute :: Machine -- ^ Turing Machine
         -> [(Maybe PartFun, Tape)] -- ^ Used partial functions and tapes
 compute tm state tape
     | tm `finished` state = [(Nothing, tape)]
+    | mfun == Nothing     = [(Nothing, tape)]
     | otherwise           = do
-        let symbol = cursor tape
-            fun = tm `next` (state, symbol)
+        let (Just fun) = mfun
             (state', c', direction') = action fun
 
             tape' = tape `update` c' -- tape in which the character has been added
@@ -137,3 +143,6 @@ compute tm state tape
             [(Just fun, tape)] ++  compute tm state' tape''
         else
             [(Just fun, tape), (Just fun, tape')] ++  compute tm state' tape''
+
+        where symbol = cursor tape
+              mfun = tm `next` (state, symbol)

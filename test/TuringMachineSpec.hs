@@ -12,25 +12,28 @@ spec =
   do
     describe "initTape" $ do
         it "init empty tape" $
-            initTape "" `shouldBe` Tape {left="", cursor=blank, right=""}
+            initTape "" `shouldBe` Tape "" '_' ""--{left="", cursor=blank, right=""}
         it "init tape with string" $
-            initTape "1010" `shouldBe` Tape {left="", cursor='1', right="010"}
+            initTape "1010" `shouldBe` Tape "" '1' "010"--{left="", cursor='1', right="010"}
+        it "replaces spaces with underscores" $ do
+            initTape " 11" `shouldBe` Tape "" '_' "11"
+            initTape "1 1 1" `shouldBe` Tape "" '1' "_1_1"
 
     describe "moveCursor" $ do
-        let emptyTape = Tape {left="", cursor=blank, right=""}
-            tape1     = Tape {left="ba", cursor='c', right="de"}
+        let emptyTape = Tape "" '_' ""
+            tape1     = Tape "ba" 'c' "de"
         it "move empty tape to the left" $
-            moveCursor emptyTape L `shouldBe` Tape {left="", cursor=blank, right=[blank]}
+            moveCursor emptyTape L `shouldBe` Tape "" '_' "_"
         it "move empty tape to the right" $
-            moveCursor emptyTape R `shouldBe` Tape {left=[blank], cursor=blank, right=""}
+            moveCursor emptyTape R `shouldBe` Tape "_" '_' ""
         it "move empty tape to Stay" $
-            moveCursor emptyTape S `shouldBe` Tape {left="", cursor=blank, right=""}
+            moveCursor emptyTape S `shouldBe` Tape "" '_' ""
         it "move not empty tape to the left" $
-            moveCursor tape1 L `shouldBe` Tape {left="a", cursor='b', right="cde"}
+            moveCursor tape1 L `shouldBe` Tape "a" 'b' "cde"
         it "move not empty tape to the right" $
-            moveCursor tape1 R `shouldBe` Tape {left="cba", cursor='d', right="e"}
+            moveCursor tape1 R `shouldBe` Tape "cba" 'd' "e"
         it "move not empty tape to Stay" $
-            moveCursor tape1 S `shouldBe` Tape {left="ba", cursor='c', right="de"}
+            moveCursor tape1 S `shouldBe` Tape "ba" 'c' "de"
 
     describe "finished" $ do
         let tm1 = Machine {partFun=[], initialState="q0", finalStates=["q2","q3"]}
@@ -44,24 +47,29 @@ spec =
     describe "next" $ do
         let tm1 = Machine { partFun = [ PartFun ("q0", '0') ("q0", '0', R)
                                       , PartFun ("q0", '1') ("q1", '1', R)
+                                      , PartFun ("q0", '*') ("q0", '*', L)
                                       , PartFun ("q1", '0') ("q2", '1', L)
                                       , PartFun ("q1", '1') ("q3", '0', L)
                                       ]
                           , initialState="q0", finalStates=["q2","q3"]
-        }
+                          }
         it "get the right next" $ do
-            tm1 `next` ("q0", '0') `shouldBe` PartFun ("q0", '0') ("q0", '0', R)
-            tm1 `next` ("q0", '1') `shouldBe` PartFun ("q0", '1') ("q1", '1', R)
-            tm1 `next` ("q1", '0') `shouldBe` PartFun ("q1", '0') ("q2", '1', L)
-            tm1 `next` ("q1", '1') `shouldBe` PartFun ("q1", '1') ("q3", '0', L)
+            tm1 `next` ("q0", '0') `shouldBe` Just (PartFun ("q0", '0') ("q0", '0', R))
+            tm1 `next` ("q0", '1') `shouldBe` Just (PartFun ("q0", '1') ("q1", '1', R))
+            tm1 `next` ("q1", '0') `shouldBe` Just (PartFun ("q1", '0') ("q2", '1', L))
+            tm1 `next` ("q1", '1') `shouldBe` Just (PartFun ("q1", '1') ("q3", '0', L))
+            tm1 `next` ("q0", 'k') `shouldBe` Just (PartFun ("q0", '*') ("q0", '*', L))
+        it "does not find the succesive action" $ do
+            tm1 `next` ("q1", 'k') `shouldBe` Nothing
+            tm1 `next` ("q2", '0') `shouldBe` Nothing
 
     describe "update" $ do
         let tape = Tape "ba" 'c' "de"
         it "updates with the correct character" $ do
-            tape `update` 'k' `shouldBe` Tape "ba"  'k' "de"
-            tape `update` 'X' `shouldBe` Tape "ba"  'X' "de"
+            tape `update` 'k' `shouldBe` Tape "ba" 'k' "de"
+            tape `update` 'X' `shouldBe` Tape "ba" 'X' "de"
         it "updates with * character" $ do
-            tape `update` '*' `shouldBe` Tape "ba"  'c' "de"
+            tape `update` '*' `shouldBe` Tape "ba" 'c' "de"
 
     describe "compute" $ do
         let q0_ = PartFun ("q0", '_') ("q1", '_', L)

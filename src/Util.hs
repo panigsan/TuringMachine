@@ -39,7 +39,7 @@ importTM x = do
 --
 -- > input_state input_symbol => output_state output_character direction
 -- Example:
--- 
+--
 -- > 0 _ => 1 _ L
 parseFun :: String        -- ^ Line to parseFun
          -> Maybe PartFun -- ^ Resulting partial function
