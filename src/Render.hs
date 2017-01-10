@@ -12,11 +12,11 @@ resetScreen :: IO ()
 resetScreen = setSGR [Reset] >> clearScreen >> setCursorPosition 0 0
 
 -- | Pause the execution for 1 second
-pause :: IO ()
-pause = do
+pause :: Int -> IO ()
+pause millis = do
     hFlush stdout
     -- 1 second pause
-    threadDelay 1000000
+    threadDelay $ millis * 1000
 
 -- | Turn the highlight ON (swap the foreground color with the background)
 highLightON :: IO ()
@@ -60,16 +60,16 @@ renderTapeContainer = do
 -- | Print the tape. Make sure to move the cursor inside the container
 renderTapeContent :: Tape -- ^ Tape to be printed
                   -> IO ()
-renderTapeContent t = do
-   putStr . repl . intersperse ' ' . reverse . trail $ left t
+renderTapeContent tape = do
+   putStr . map repl . intersperse ' ' . reverse . trail . left $ tape
 
    putStr "║"
-   setSGR [SetColor Foreground Vivid Green]
-   putChar . repl' $ cursor t
+   boldON
+   putChar . repl . cursor $ tape
    setSGR [Reset]
    putStr "║"
 
-   putStr . repl . intersperse ' ' . trail $ right t
+   putStr . map repl . intersperse ' ' . trail . right $ tape
 
    where
        -- equal spaces on each side
@@ -77,9 +77,8 @@ renderTapeContent t = do
        -- add or remove symbols in order to keep both sides of the same length
        trail text | (length text < sides) = text ++ replicate (sides - length text) blank
                   | otherwise = take sides text
-       repl = map (repl')
-       repl' '_' = ' '
-       repl'  c  = c
+       repl '_' = ' '
+       repl  c  = c
 
 -- | Print the given turing machine and all its partial functions
 renderTMContainer :: Machine -- ^ Turing machine to be printed

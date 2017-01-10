@@ -1,12 +1,13 @@
-module Main where
+module Main (main) where
 
 import System.Console.ANSI
-import Control.Concurrent
 import TuringMachine
-import Util (importTM)
+import Util       (importTM)
 import Render
-import Data.List (intercalate, elemIndex)
-import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
+import Text.Read  (readMaybe)
+import Data.Maybe (fromJust)
+import Data.List  (intercalate, elemIndex)
+import System.IO  (BufferMode (NoBuffering), hSetBuffering, stdout, hFlush)
 
 main :: IO ()
 main = do
@@ -17,16 +18,16 @@ main = do
     putStrLn $ "Tape: "
     tapeText <- getLine
 
+    putStrLn $ "Interval (in millisecond): "
+    millisText <- getLine
+
     file <- readFile fileName
     let
         mtm = importTM file
     if mtm == Nothing then do
         putStrLn $ "Cannot parse the turing machine"
-        putStrLn $ "Press enter to continue"
-        a <- getLine
-        main
     else do
-        let
+        let millis = parseMillis millisText
             (Just tm) = mtm
             state = initialState tm
             tape = initTape tapeText
@@ -36,28 +37,39 @@ main = do
         hideCursor
 
         renderHeader fileName tape
-
         setCursorPosition 4 0 >> renderTapeContainer
-
         setCursorPosition 7 0 >> renderTMContainer tm
-
         setCursorPosition 5 1 >> renderTapeContent tape
 
-        mapM_ (\(step, fun) -> updateScreen tm fun step) (zip [1..] results)
+        mapM_ (\(step, fun) -> updateScreen tm fun step millis)
+              $ zip [1..] results
 
         setCursorPosition 7 0 >> renderTMContainer tm
         showCursor
+
+    putStrLn $ "Press enter to continue (q to quit)"
+    a <- getLine
+    if a /= "q" then main
+    else return ()
+    
+    where
+        parseMillis :: String -> Int
+        parseMillis x | millis == Nothing = 1000
+                      | otherwise         = fromJust millis
+            where millis = readMaybe $ x :: Maybe Int
 
 -- | Prints the tape content and (if possible) highlights the partial function
 updateScreen :: Machine               -- ^ Turing machine
              -> (Maybe PartFun, Tape) -- ^ Curerent partial function used
              -> Int                   -- ^ Step counter
+             -> Int                   -- ^ Interval (time to wait)
              -> IO ()
-updateScreen tm (Nothing, tape) step = do
+updateScreen tm (Nothing, tape) step interval = do
     setCursorPosition 5 1 >> renderTapeContent tape
     updateStepCounter step
-    pause
-updateScreen tm (Just fun, tape) step = do
+    pause interval
+
+updateScreen tm (Just fun, tape) step interval = do
     setCursorPosition 5 1 >> renderTapeContent tape
     updateStepCounter step
 
@@ -65,7 +77,8 @@ updateScreen tm (Just fun, tape) step = do
 
     setCursorPosition (12 + index) 0
     highLightON >> (renderFun fun)
-    pause
+
+    pause interval
 
     setCursorPosition (12 + index) 0
     highLightOFF >> (renderFun fun)
